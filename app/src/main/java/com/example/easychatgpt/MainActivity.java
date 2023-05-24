@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS){
                     // Set the Language
-                    textToSpeech.setLanguage(Locale.FRENCH);
+                    textToSpeech.setLanguage(Locale.UK);
                     textToSpeech.setSpeechRate(1.0f);
                 }
                 else {
