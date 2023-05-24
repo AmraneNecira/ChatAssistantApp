@@ -1,7 +1,5 @@
 package com.example.easychatgpt;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,40 +10,23 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
+
 
 public class MainActivity extends AppCompatActivity {
 
-    //Create WebSocket
     static final String WS_URL = "ws://192.168.145.79:6060";
-    WebSocket webSocket;
     RecyclerView recyclerView;
     TextView welcomeTextView;
     EditText messageEditText;
     ImageButton sendButton;
     List<Message> messageList;
     MessageAdapter messageAdapter;
-
-    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +47,6 @@ public class MainActivity extends AppCompatActivity {
         llm.setStackFromEnd(true);
         recyclerView.setLayoutManager(llm);
 
-        //System.out.println("calling the startWebSocket");
-        //startWebSocket();
-
-        System.out.println("calling the webSocketConnection");
         webSocketConnection();
 
         sendButton.setOnClickListener((v)->{
@@ -95,46 +72,6 @@ public class MainActivity extends AppCompatActivity {
     void addResponse(String response){
         //messageList.remove(messageList.size()-1); // this causes problem don't know why
         addToChat(response,Message.SENT_BY_SERVER);
-    }
-
-    // OkHttp
-    public void startWebSocket(){
-        System.out.println("creating instances");
-        OkHttpClient client = new OkHttpClient();
-
-        System.out.println("creating request");
-        Request request = new Request.Builder().url(WS_URL).build();
-
-        System.out.println("webSocketListener");
-        WebSocketListener webSocketListener = new WebSocketListener() {
-            @Override
-            public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
-                System.out.println("Connected to WebSocket server");
-            }
-
-            @Override
-            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
-                System.out.println("Recieved message :" + text);
-                addResponse(text);
-            }
-
-            @Override
-            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
-                addResponse(t.getMessage());
-                System.out.println(t.getMessage());
-            }
-
-            @Override
-            public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
-                System.out.println("WebSocket connection closed");
-            }
-        };
-        webSocket = client.newWebSocket(request,webSocketListener);
-    }
-    public void disconnectWebSocket() {
-        if (webSocket != null) {
-            webSocket.close(200, null);
-        }
     }
 
     // WebSocketConnection for autobahn
