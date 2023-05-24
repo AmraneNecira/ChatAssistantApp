@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketException;
+import de.tavendo.autobahn.WebSocketHandler;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -42,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     List<Message> messageList;
     MessageAdapter messageAdapter;
 
+    //
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
         llm.setStackFromEnd(true);
         recyclerView.setLayoutManager(llm);
 
-        System.out.println("calling the startWebSocket");
-        startWebSocket();
+        //System.out.println("calling the startWebSocket");
+        //startWebSocket();
+
+        System.out.println("calling the webSocketConnection");
+        webSocketConnection();
 
         sendButton.setOnClickListener((v)->{
             String question = messageEditText.getText().toString().trim();
@@ -89,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         addToChat(response,Message.SENT_BY_SERVER);
     }
 
-
+    // OkHttp
     public void startWebSocket(){
         System.out.println("creating instances");
         OkHttpClient client = new OkHttpClient();
@@ -123,10 +131,36 @@ public class MainActivity extends AppCompatActivity {
         };
         webSocket = client.newWebSocket(request,webSocketListener);
     }
-
     public void disconnectWebSocket() {
         if (webSocket != null) {
             webSocket.close(200, null);
+        }
+    }
+
+    // WebSocketConnection for autobahn
+    public void webSocketConnection() {
+        try {
+            WebSocketConnection con = new WebSocketConnection();
+            con.connect("ws://192.168.145.79:6060", new WebSocketHandler() {
+
+                @Override
+                public void onOpen() {
+                    addResponse("open connection");
+                }
+
+                @Override
+                public void onClose(int code, String reason) {
+                    addResponse("close connection");
+                }
+
+                @Override
+                public void onTextMessage(String payload) {
+                    addResponse(payload);
+                }
+            });
+        } catch (WebSocketException e) {
+            e.printStackTrace();
+            addResponse(e.getMessage());
         }
     }
 
