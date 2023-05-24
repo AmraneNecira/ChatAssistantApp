@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     MessageAdapter messageAdapter;
 
     // Text Speech
-    TextToSpeech textToSpeech;
+    static TextToSpeech textToSpeech;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // play the message if it is from the user
                 if (sentBy.equals(Message.SENT_BY_USER)){
-                    if (textToSpeech != null && !textToSpeech.isSpeaking()){
-                        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH,null, null);
-                    }
+                    playText(message);
                 }
             }
         });
@@ -128,4 +126,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Method to play the text using Text-to-Speech engine
+    static void playText(String text) {
+        if (textToSpeech != null && !textToSpeech.isSpeaking()) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
 }

@@ -1,5 +1,8 @@
 package com.example.easychatgpt;
 
+import static com.example.easychatgpt.MainActivity.playText;
+
+import android.speech.tts.TextToSpeech;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +36,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             holder.leftChatView.setVisibility(View.GONE);
             holder.rightChatView.setVisibility(View.VISIBLE);
             holder.rightTextView.setText(message.getMessage());
+
+            // Add click listener to play the message
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String messageText = message.getMessage();
+                    playText(messageText);
+                }
+            });
         }else{
             holder.rightChatView.setVisibility(View.GONE);
             holder.leftChatView.setVisibility(View.VISIBLE);
