@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                     textToSpeech.setSpeechRate(1.0f);
                 }
                 else {
-
+                    System.out.println("there is a problem with the TTS");
                 }
             }
         });
