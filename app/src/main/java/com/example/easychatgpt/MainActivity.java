@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         System.out.println("Test");
         messageList = new ArrayList<>();
-
+//
         recyclerView = findViewById(R.id.recycler_view);
         welcomeTextView = findViewById(R.id.welcome_text);
         messageEditText = findViewById(R.id.message_edit_text);
