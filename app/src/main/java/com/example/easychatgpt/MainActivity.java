@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
@@ -28,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     List<Message> messageList;
     MessageAdapter messageAdapter;
 
+    // Text Speech
+    TextToSpeech textToSpeech;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +51,22 @@ public class MainActivity extends AppCompatActivity {
         llm.setStackFromEnd(true);
         recyclerView.setLayoutManager(llm);
 
+        //initialize the Text To Speech Engine
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS){
+                    // Set the Language
+                    textToSpeech.setLanguage(Locale.FRENCH);
+                    textToSpeech.setSpeechRate(1.0f);
+                }
+                else {
+
+                }
+            }
+        });
+
+        // Connecting to server
         webSocketConnection();
 
         sendButton.setOnClickListener((v)->{
@@ -65,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
                 messageList.add(new Message(message,sentBy));
                 messageAdapter.notifyDataSetChanged();
                 recyclerView.smoothScrollToPosition(messageAdapter.getItemCount());
+
+                // play the message if it is from the user
+                if (sentBy.equals(Message.SENT_BY_USER)){
+                    if (textToSpeech != null && !textToSpeech.isSpeaking()){
+                        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH,null, null);
+                    }
+                }
             }
         });
     }
