@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         System.out.println("Test");
         messageList = new ArrayList<>();
-//
+
         recyclerView = findViewById(R.id.recycler_view);
         welcomeTextView = findViewById(R.id.welcome_text);
         messageEditText = findViewById(R.id.message_edit_text);
@@ -62,13 +62,12 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(llm);
 
         System.out.println("calling the startWebSocket");
-
         startWebSocket();
+
         sendButton.setOnClickListener((v)->{
             String question = messageEditText.getText().toString().trim();
             addToChat(question,Message.SENT_BY_USER);
             //TODO add text to speech for the written message
-
             messageEditText.setText("");
             welcomeTextView.setVisibility(View.GONE);
         });
