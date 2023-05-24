@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     //Create WebSocket
     static final String WS_URL = "ws://192.168.145.79:6060";
     WebSocket webSocket;
-
     RecyclerView recyclerView;
     TextView welcomeTextView;
     EditText messageEditText;
