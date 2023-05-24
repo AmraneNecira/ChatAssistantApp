@@ -1,6 +1,7 @@
 package com.example.easychatgpt;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,22 +27,27 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class MainActivity extends AppCompatActivity {
+
+    //Create WebSocket
+    static final String WS_URL = "ws://192.168.145.79:6060";
+    WebSocket webSocket;
+
     RecyclerView recyclerView;
     TextView welcomeTextView;
     EditText messageEditText;
     ImageButton sendButton;
     List<Message> messageList;
     MessageAdapter messageAdapter;
-    public static final MediaType JSON
-            = MediaType.get("application/json; charset=utf-8");
-    OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        System.out.println("Test");
         messageList = new ArrayList<>();
 
         recyclerView = findViewById(R.id.recycler_view);
@@ -56,13 +62,15 @@ public class MainActivity extends AppCompatActivity {
         llm.setStackFromEnd(true);
         recyclerView.setLayoutManager(llm);
 
+        System.out.println("calling the startWebSocket");
+
+        startWebSocket();
         sendButton.setOnClickListener((v)->{
             String question = messageEditText.getText().toString().trim();
             addToChat(question,Message.SENT_BY_USER);
             //TODO add text to speech for the written message
 
             messageEditText.setText("");
-            callAPI(question);
             welcomeTextView.setVisibility(View.GONE);
         });
     }
@@ -79,76 +87,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void addResponse(String response){
-        messageList.remove(messageList.size()-1);
+        //messageList.remove(messageList.size()-1); // this causes problem don't know why
         addToChat(response,Message.SENT_BY_SERVER);
     }
 
-    void callAPI(String question){
-        //okhttp
-        messageList.add(new Message("Typing... ",Message.SENT_BY_SERVER));
 
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("model","text-davinci-003");
-            jsonBody.put("prompt",question);
-            jsonBody.put("max_tokens",4000);
-            jsonBody.put("temperature",0);
-        } catch (JSONException e) {
-            e.printStackTrace();
+    public void startWebSocket(){
+        System.out.println("creating instances");
+        OkHttpClient client = new OkHttpClient();
+
+        System.out.println("creating request");
+        Request request = new Request.Builder().url(WS_URL).build();
+
+        System.out.println("webSocketListener");
+        WebSocketListener webSocketListener = new WebSocketListener() {
+            @Override
+            public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
+                System.out.println("Connected to WebSocket server");
+            }
+
+            @Override
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
+                System.out.println("Recieved message :" + text);
+                addResponse(text);
+            }
+
+            @Override
+            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
+                addResponse(t.getMessage());
+                System.out.println(t.getMessage());
+            }
+
+            @Override
+            public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+                System.out.println("WebSocket connection closed");
+            }
+        };
+        webSocket = client.newWebSocket(request,webSocketListener);
+    }
+
+    public void disconnectWebSocket() {
+        if (webSocket != null) {
+            webSocket.close(200, null);
         }
-        RequestBody body = RequestBody.create(jsonBody.toString(),JSON);
-        Request request = new Request.Builder()
-                .url("https://api.openai.com/v1/completions")
-                .header("Authorization","Bearer YOUR_API_KEY")
-                .post(body)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                addResponse("Failed to load response due to "+e.getMessage());
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if(response.isSuccessful()){
-                    JSONObject  jsonObject = null;
-                    try {
-                        jsonObject = new JSONObject(response.body().string());
-                        JSONArray jsonArray = jsonObject.getJSONArray("choices");
-                        String result = jsonArray.getJSONObject(0).getString("text");
-                        addResponse(result.trim());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-                else{
-                    addResponse("Failed to load response due to "+response.body().toString());
-                }
-            }
-        });
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
